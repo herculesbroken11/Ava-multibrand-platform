@@ -18,6 +18,9 @@ export async function registerHealthRoutes(app: FastifyInstance): Promise<void> 
         enabled: env.DATABASE_ENABLED,
         reachable,
       },
+      rateLimit: {
+        enabled: env.RATE_LIMIT_ENABLED,
+      },
     };
   });
 }

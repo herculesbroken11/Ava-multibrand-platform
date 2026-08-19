@@ -46,6 +46,10 @@ function mockTelemetry(): AvaTurnTelemetry {
     searchStatus: "not_needed",
     searchProvider: null,
     searchResultCount: 0,
+    searchDurationMs: null,
+    promptTokens: null,
+    completionTokens: null,
+    totalTokens: null,
   };
 }
 
@@ -90,7 +94,8 @@ async function retrievePublicInformation(
     });
     results = raw.slice(0, env.SEARCH_MAX_RESULTS);
     status = results.length > 0 ? "success" : "no_results";
-  } catch {
+  } catch (error) {
+    if (error instanceof AppError) throw error;
     status = "failed";
     results = [];
   }
@@ -139,7 +144,7 @@ async function executeAvaTurn(
     );
   }
 
-  const { text } = await llm.complete({
+  const { text, usage } = await llm.complete({
     system,
     messages: history,
     maxOutputTokens: env.AI_MAX_OUTPUT_TOKENS,
@@ -182,6 +187,10 @@ async function executeAvaTurn(
       searchStatus: bundle.status,
       searchProvider: bundle.status === "not_needed" ? null : providerName,
       searchResultCount: bundle.results.length,
+      searchDurationMs: bundle.durationMs ?? null,
+      promptTokens: usage?.promptTokens ?? null,
+      completionTokens: usage?.completionTokens ?? null,
+      totalTokens: usage?.totalTokens ?? null,
     },
   };
 }

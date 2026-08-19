@@ -1,5 +1,7 @@
 import {
+  API_ERROR_CODES,
   CONVERSATION_MESSAGE_PATH,
+  type ApiErrorBody,
   type ConversationResponse,
 } from "@product-reviews/contracts";
 import {
@@ -38,8 +40,29 @@ async function parseJson(response: Response): Promise<unknown> {
   try {
     return await response.json();
   } catch {
-    throw new ConversationRequestError();
+    throw new ConversationRequestError(undefined, { status: response.status });
   }
+}
+
+function errorFromResponse(status: number, payload: unknown): ConversationRequestError {
+  if (payload && typeof payload === "object" && "error" in payload) {
+    const body = payload as ApiErrorBody;
+    if (typeof body.error?.code === "string") {
+      return new ConversationRequestError(body.error.message, {
+        status,
+        code: body.error.code,
+      });
+    }
+  }
+
+  if (status === 429) {
+    return new ConversationRequestError(undefined, {
+      status,
+      code: API_ERROR_CODES.RATE_LIMITED,
+    });
+  }
+
+  return new ConversationRequestError(undefined, { status });
 }
 
 export const httpConversationService: ConversationService = {
@@ -71,7 +94,7 @@ export const httpConversationService: ConversationService = {
     const payload = await parseJson(response);
 
     if (!response.ok || !isConversationResponse(payload)) {
-      throw new ConversationRequestError();
+      throw errorFromResponse(response.status, payload);
     }
 
     return {

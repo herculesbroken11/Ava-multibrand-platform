@@ -66,6 +66,10 @@ interface TurnRow {
   search_status: string | null;
   search_provider: string | null;
   search_result_count: number;
+  search_duration_ms: number | null;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  total_tokens: number | null;
   sources: unknown;
   created_at: Date;
 }
@@ -103,6 +107,10 @@ function mapTurn(row: TurnRow): ConversationTurnRecord {
     searchStatus: row.search_status,
     searchProvider: row.search_provider,
     searchResultCount: row.search_result_count,
+    searchDurationMs: row.search_duration_ms,
+    promptTokens: row.prompt_tokens,
+    completionTokens: row.completion_tokens,
+    totalTokens: row.total_tokens,
     sources: row.sources,
     createdAt: row.created_at,
   };
@@ -130,6 +138,10 @@ export class PostgresConversationRepository implements ConversationLogRepository
       searchStatus: input.searchStatus,
       searchProvider: input.searchProvider,
       searchResultCount: input.searchResultCount,
+      searchDurationMs: input.searchDurationMs ?? null,
+      promptTokens: input.promptTokens ?? null,
+      completionTokens: input.completionTokens ?? null,
+      totalTokens: input.totalTokens ?? null,
     });
   }
 
@@ -152,6 +164,10 @@ export class PostgresConversationRepository implements ConversationLogRepository
       searchStatus: input.searchStatus,
       searchProvider: input.searchProvider,
       searchResultCount: input.searchResultCount,
+      searchDurationMs: null,
+      promptTokens: null,
+      completionTokens: null,
+      totalTokens: null,
     });
   }
 
@@ -173,6 +189,10 @@ export class PostgresConversationRepository implements ConversationLogRepository
     searchStatus: string | null;
     searchProvider: string | null;
     searchResultCount: number;
+    searchDurationMs: number | null;
+    promptTokens: number | null;
+    completionTokens: number | null;
+    totalTokens: number | null;
   }): Promise<RecordedTurn> {
     const client = await this.pool.connect();
     try {
@@ -229,16 +249,18 @@ export class PostgresConversationRepository implements ConversationLogRepository
           session_id, turn_number, user_message, ava_response, structured_response,
           ai_provider, ai_model, response_duration_ms, request_status, error_code,
           search_used, search_intent, search_status, search_provider, search_result_count,
+          search_duration_ms, prompt_tokens, completion_tokens, total_tokens,
           sources, created_at
         )
         VALUES (
           $1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10,
-          $11, $12, $13, $14, $15, $16::jsonb, now()
+          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20::jsonb, now()
         )
         RETURNING
           id, session_id, turn_number, user_message, ava_response, structured_response,
           ai_provider, ai_model, response_duration_ms, request_status, error_code,
           search_used, search_intent, search_status, search_provider, search_result_count,
+          search_duration_ms, prompt_tokens, completion_tokens, total_tokens,
           sources, created_at
         `,
         [
@@ -257,6 +279,10 @@ export class PostgresConversationRepository implements ConversationLogRepository
           input.searchStatus,
           input.searchProvider,
           input.searchResultCount,
+          input.searchDurationMs,
+          input.promptTokens,
+          input.completionTokens,
+          input.totalTokens,
           JSON.stringify(input.sources),
         ],
       );

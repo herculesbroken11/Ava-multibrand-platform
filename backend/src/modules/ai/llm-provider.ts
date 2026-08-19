@@ -10,8 +10,15 @@ export interface LlmCompletionInput {
   timeoutMs: number;
 }
 
+export interface LlmTokenUsage {
+  promptTokens: number | null;
+  completionTokens: number | null;
+  totalTokens: number | null;
+}
+
 export interface LlmCompletionResult {
   text: string;
+  usage?: LlmTokenUsage;
 }
 
 export interface LlmProvider {

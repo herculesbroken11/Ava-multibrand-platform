@@ -6,4 +6,8 @@ export interface AvaTurnTelemetry {
   searchStatus: string | null;
   searchProvider: string | null;
   searchResultCount: number;
+  searchDurationMs: number | null;
+  promptTokens: number | null;
+  completionTokens: number | null;
+  totalTokens: number | null;
 }

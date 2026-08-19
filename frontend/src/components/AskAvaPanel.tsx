@@ -6,6 +6,7 @@ import type { BrandConfig } from "@/brands/types";
 import { stashPendingQuestion } from "@/conversation/session-storage";
 import { ScriptText } from "@/components/ui/ScriptText";
 import { ArrowUpIcon } from "@/components/ui/icons";
+import { trackAskAvaStart } from "@/lib/analytics/events";
 import {
   ASK_AVA_PATH,
   ASK_AVA_QUERY_PARAM,
@@ -32,6 +33,7 @@ export function AskAvaPanel({
     const next = clampQuestion(question);
     if (!next) return;
     stashPendingQuestion(brand.id, next);
+    trackAskAvaStart({ brandId: brand.id, entry: "composer" });
     router.push(buildAskAvaHref(next));
   }
 

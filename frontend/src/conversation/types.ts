@@ -43,8 +43,16 @@ export interface ConversationService {
 }
 
 export class ConversationRequestError extends Error {
-  constructor(message = "The conversation service could not complete that request.") {
+  readonly status?: number;
+  readonly code?: string;
+
+  constructor(
+    message = "The conversation service could not complete that request.",
+    options: { status?: number; code?: string } = {},
+  ) {
     super(message);
     this.name = "ConversationRequestError";
+    this.status = options.status;
+    this.code = options.code;
   }
 }

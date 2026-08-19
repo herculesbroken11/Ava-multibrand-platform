@@ -43,6 +43,10 @@ export class MemoryConversationRepository implements ConversationLogRepository {
       searchStatus: input.searchStatus,
       searchProvider: input.searchProvider,
       searchResultCount: input.searchResultCount,
+      searchDurationMs: input.searchDurationMs ?? null,
+      promptTokens: input.promptTokens ?? null,
+      completionTokens: input.completionTokens ?? null,
+      totalTokens: input.totalTokens ?? null,
     });
   }
 
@@ -65,6 +69,10 @@ export class MemoryConversationRepository implements ConversationLogRepository {
       searchStatus: input.searchStatus,
       searchProvider: input.searchProvider,
       searchResultCount: input.searchResultCount,
+      searchDurationMs: null,
+      promptTokens: null,
+      completionTokens: null,
+      totalTokens: null,
     });
   }
 
@@ -104,6 +112,10 @@ export class MemoryConversationRepository implements ConversationLogRepository {
     searchStatus: string | null;
     searchProvider: string | null;
     searchResultCount: number;
+    searchDurationMs: number | null;
+    promptTokens: number | null;
+    completionTokens: number | null;
+    totalTokens: number | null;
   }): Promise<RecordedTurn> {
     const key = sessionKey(input.brandId, input.clientSessionId);
     return this.withLock(key, () => {
@@ -156,6 +168,10 @@ export class MemoryConversationRepository implements ConversationLogRepository {
         searchStatus: input.searchStatus,
         searchProvider: input.searchProvider,
         searchResultCount: input.searchResultCount,
+        searchDurationMs: input.searchDurationMs,
+        promptTokens: input.promptTokens,
+        completionTokens: input.completionTokens,
+        totalTokens: input.totalTokens,
         sources: input.sources,
         createdAt: now,
       };

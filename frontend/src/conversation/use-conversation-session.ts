@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { API_ERROR_CODES } from "@product-reviews/contracts";
 import type { BrandConfig } from "@/brands/types";
 import { createId, nowIso } from "@/conversation/ids";
 import { getConversationService } from "@/conversation/service";
@@ -11,7 +12,15 @@ import {
   persistConversationSession,
   subscribeConversationStore,
 } from "@/conversation/session-storage";
-import type { ConversationMessage, ConversationSession } from "@/conversation/types";
+import {
+  ConversationRequestError,
+  type ConversationMessage,
+  type ConversationSession,
+} from "@/conversation/types";
+import {
+  trackAvaRetry,
+  trackAvaTurn,
+} from "@/lib/analytics/events";
 import {
   MAX_QUESTION_LENGTH,
   clampQuestion,
@@ -76,6 +85,7 @@ export function useConversationSession({
   const session = parseConversationSession(snapshot);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const bootstrapped = useRef(false);
 
   const persist = useCallback(
@@ -102,7 +112,11 @@ export function useConversationSession({
       const run = (async () => {
         setIsLoading(true);
         setHasError(false);
+        setErrorCode(null);
         persist(next);
+
+        const isFollowUp =
+          next.messages.filter((message) => message.role === "user").length > 1;
 
         try {
           const result = await service.sendMessage({
@@ -123,9 +137,29 @@ export function useConversationSession({
             ],
             updatedAt: nowIso(),
           });
-        } catch {
+          trackAvaTurn({
+            brandId: brand.id,
+            result: "success",
+            isFollowUp,
+            hasSources: Boolean(result.message.sources?.length),
+          });
+        } catch (error) {
           if (readSession(brand.id)?.id === next.id) {
+            const code =
+              error instanceof ConversationRequestError ? error.code : undefined;
             setHasError(true);
+            setErrorCode(code ?? null);
+            trackAvaTurn({
+              brandId: brand.id,
+              result:
+                code === API_ERROR_CODES.RATE_LIMITED
+                  ? "rate_limited"
+                  : code === API_ERROR_CODES.CAPACITY_LIMITED
+                    ? "capacity_limited"
+                    : "error",
+              isFollowUp,
+              hasSources: false,
+            });
           }
         } finally {
           if (readSession(brand.id)?.id === next.id) {
@@ -198,6 +232,7 @@ export function useConversationSession({
   const retry = useCallback(() => {
     const current = readSession(brand.id);
     if (!current || isLoading || !needsAvaReply(current)) return;
+    trackAvaRetry({ brandId: brand.id });
     void requestAva(current);
   }, [brand.id, isLoading, requestAva]);
 
@@ -210,6 +245,7 @@ export function useConversationSession({
     messages: session?.messages ?? [],
     isLoading,
     hasError,
+    errorCode,
     hydrated,
     sendUserMessage,
     retry,

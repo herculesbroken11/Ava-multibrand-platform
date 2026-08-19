@@ -3,9 +3,11 @@ import type { BrandConfig } from "@/brands/types";
 export function ConversationError({
   brand,
   onRetry,
+  message,
 }: {
   brand: BrandConfig;
   onRetry: () => void;
+  message?: string;
 }) {
   return (
     <div
@@ -13,7 +15,7 @@ export function ConversationError({
       role="alert"
     >
       <p className="text-sm font-medium leading-6 text-body md:text-[0.95rem]">
-        {brand.conversation.errorMessage}
+        {message ?? brand.conversation.errorMessage}
       </p>
       <button
         type="button"

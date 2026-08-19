@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Caveat, Plus_Jakarta_Sans, Source_Serif_4 } from "next/font/google";
+import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 import { BrandStyles } from "@/components/BrandStyles";
 import { getActiveBrand } from "@/lib/brand";
 import "./globals.css";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col bg-page font-sans text-body">
         <BrandStyles brand={brand} />
+        <AnalyticsScripts brand={brand} />
         {children}
       </body>
     </html>

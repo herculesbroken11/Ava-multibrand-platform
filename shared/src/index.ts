@@ -74,6 +74,9 @@ export interface HealthResponse {
     enabled: boolean;
     reachable: boolean;
   };
+  rateLimit?: {
+    enabled: boolean;
+  };
 }
 
 export interface ApiErrorBody {
@@ -92,7 +95,69 @@ export const API_ERROR_CODES = {
   PROVIDER_AUTH: "PROVIDER_AUTH",
   PROVIDER_UNAVAILABLE: "PROVIDER_UNAVAILABLE",
   PROVIDER_INVALID_RESPONSE: "PROVIDER_INVALID_RESPONSE",
+  RATE_LIMITED: "RATE_LIMITED",
+  CAPACITY_LIMITED: "CAPACITY_LIMITED",
   INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
+
+export const ANALYTICS_FORBIDDEN_KEYS = [
+  "question",
+  "answer",
+  "content",
+  "message",
+  "text",
+  "prompt",
+  "query",
+  "q",
+  "url",
+  "href",
+  "sources",
+  "user_message",
+  "ava_response",
+  "session_id",
+  "sessionId",
+  "client_session_id",
+  "email",
+  "name",
+  "phone",
+  "ip",
+] as const;
+
+export const GA4_MEASUREMENT_ID_PATTERN = /^G-[A-Z0-9]+$/;
+export const GTM_CONTAINER_ID_PATTERN = /^GTM-[A-Z0-9]+$/;
+
+export type AnalyticsPrimitive = string | number | boolean;
+
+export function isGa4MeasurementId(value: string | undefined | null): value is string {
+  return typeof value === "string" && GA4_MEASUREMENT_ID_PATTERN.test(value.trim());
+}
+
+export function isGtmContainerId(value: string | undefined | null): value is string {
+  return typeof value === "string" && GTM_CONTAINER_ID_PATTERN.test(value.trim());
+}
+
+export function sanitizeAnalyticsParams(
+  input: Record<string, unknown>,
+): Record<string, AnalyticsPrimitive> {
+  const forbidden = new Set<string>(ANALYTICS_FORBIDDEN_KEYS);
+  const cleaned: Record<string, AnalyticsPrimitive> = {};
+
+  for (const [key, value] of Object.entries(input)) {
+    if (forbidden.has(key)) continue;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      cleaned[key] = value;
+    }
+  }
+
+  return cleaned;
+}
+
+export function analyticsPayloadContainsForbidden(
+  payload: Record<string, unknown>,
+): boolean {
+  return ANALYTICS_FORBIDDEN_KEYS.some((key) =>
+    Object.prototype.hasOwnProperty.call(payload, key),
+  );
+}

@@ -206,6 +206,8 @@ export const productReviewsBrand: BrandConfig = {
       "Start with what you’re trying to buy, or the problem you need solved. Ava will keep the first reply short and may ask a couple of useful questions before recommending.",
     errorMessage:
       "Ava couldn’t reply just then. You can try sending that again.",
+    rateLimitMessage:
+      "Ava is getting a lot of questions right now. Please try again in a moment.",
     retryLabel: "Try again",
     loadingLabel: "Ava is thinking",
     followUpsLabel: "Suggested next questions",

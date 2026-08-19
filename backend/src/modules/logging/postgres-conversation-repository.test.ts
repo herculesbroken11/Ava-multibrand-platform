@@ -76,9 +76,18 @@ describe("postgres conversation repository", { timeout: 180_000 }, () => {
   after(async () => {
     await pool?.end();
     await embedded?.stop();
-    if (dataDir) {
-      await rm(dataDir, { recursive: true, force: true });
+    if (!dataDir) return;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      try {
+        await rm(dataDir, { recursive: true, force: true });
+        return;
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (code !== "EBUSY" && code !== "EPERM") throw error;
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+      }
     }
+    // Windows can keep a lock on the embedded data dir after stop(); leftover temp is harmless.
   });
 
   it("P: migration creates the required schema", async () => {
@@ -172,6 +181,33 @@ describe("postgres conversation repository", { timeout: 180_000 }, () => {
     assert.equal(recorded.turn.aiProvider, "openai");
     assert.equal(recorded.turn.aiModel, "gpt-4o-mini");
     assert.equal(recorded.turn.responseDurationMs, 42);
+  });
+
+  it("stores token metadata and search duration", async () => {
+    const recorded = await repo.recordSuccessfulTurn(
+      successLog({
+        clientSessionId: "convo_tokens",
+        promptTokens: 100,
+        completionTokens: 50,
+        totalTokens: 150,
+        searchDurationMs: 800,
+      }),
+    );
+    assert.equal(recorded.turn.promptTokens, 100);
+    assert.equal(recorded.turn.completionTokens, 50);
+    assert.equal(recorded.turn.totalTokens, 150);
+    assert.equal(recorded.turn.searchDurationMs, 800);
+
+    const columns = await db().query<{ column_name: string }>(
+      `
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'conversation_turns'
+        AND column_name IN ('prompt_tokens', 'completion_tokens', 'total_tokens', 'search_duration_ms')
+      `,
+    );
+    assert.equal(columns.rows.length, 4);
   });
 
   it("G: stores search metadata and validated sources", async () => {

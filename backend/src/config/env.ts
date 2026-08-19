@@ -24,6 +24,19 @@ function loadDotEnv(filename: string): void {
 loadDotEnv(".env");
 loadDotEnv(".env.local");
 
+function booleanEnv(defaultValue = false) {
+  return z.preprocess((value) => {
+    if (value === undefined || value === "") return defaultValue;
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === "true" || normalized === "1") return true;
+      if (normalized === "false" || normalized === "0") return false;
+    }
+    return value;
+  }, z.boolean());
+}
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -32,28 +45,25 @@ const envSchema = z
     FRONTEND_ORIGIN: z.string().url().default("http://localhost:3000"),
     BODY_LIMIT_BYTES: z.coerce.number().int().positive().default(32_768),
     REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(45_000),
+    TRUST_PROXY: booleanEnv(false),
     AI_PROVIDER: z.enum(["mock", "openai"]).default("mock"),
     AI_API_KEY: z.string().optional(),
     AI_MODEL: z.string().min(1).default("gpt-4o-mini"),
     AI_TIMEOUT_MS: z.coerce.number().int().positive().default(25_000),
     AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().max(4096).default(1200),
+    AI_MAX_CONCURRENT_REQUESTS: z.coerce.number().int().min(1).max(32).default(4),
     SEARCH_PROVIDER: z.enum(["mock", "openai"]).default("mock"),
     SEARCH_MODEL: z.string().default(""),
     SEARCH_TIMEOUT_MS: z.coerce.number().int().min(3_000).max(12_000).default(10_000),
     SEARCH_MAX_RESULTS: z.coerce.number().int().min(1).max(8).default(5),
     SEARCH_CONTEXT_SIZE: z.enum(["low", "medium", "high"]).default("medium"),
-    DATABASE_ENABLED: z.preprocess((value) => {
-      if (value === undefined || value === "") return false;
-      if (typeof value === "boolean") return value;
-      if (typeof value === "string") {
-        const normalized = value.trim().toLowerCase();
-        if (normalized === "true" || normalized === "1") return true;
-        if (normalized === "false" || normalized === "0") return false;
-      }
-      return value;
-    }, z.boolean()),
+    SEARCH_MAX_CONCURRENT_REQUESTS: z.coerce.number().int().min(1).max(32).default(4),
+    DATABASE_ENABLED: booleanEnv(false),
     DATABASE_URL: z.string().default(""),
     DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
+    RATE_LIMIT_ENABLED: booleanEnv(true),
+    RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000).default(30),
+    RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).max(3_600_000).default(60_000),
   })
   .superRefine((value, ctx) => {
     if (value.AI_PROVIDER !== "mock" && !value.AI_API_KEY?.trim()) {

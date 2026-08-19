@@ -45,7 +45,8 @@ function shouldLogFailedTurn(error: unknown): boolean {
   if (!(error instanceof AppError)) return true;
   return (
     error.code !== API_ERROR_CODES.VALIDATION_ERROR &&
-    error.code !== API_ERROR_CODES.UNKNOWN_BRAND
+    error.code !== API_ERROR_CODES.UNKNOWN_BRAND &&
+    error.code !== API_ERROR_CODES.RATE_LIMITED
   );
 }
 
@@ -102,6 +103,10 @@ export async function sendConversationMessage(
       searchStatus: outcome.telemetry.searchStatus,
       searchProvider: outcome.telemetry.searchProvider,
       searchResultCount: outcome.telemetry.searchResultCount,
+      searchDurationMs: outcome.telemetry.searchDurationMs,
+      promptTokens: outcome.telemetry.promptTokens,
+      completionTokens: outcome.telemetry.completionTokens,
+      totalTokens: outcome.telemetry.totalTokens,
     });
 
     return outcome.response;

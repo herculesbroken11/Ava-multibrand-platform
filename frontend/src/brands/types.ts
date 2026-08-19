@@ -183,6 +183,7 @@ export interface ConversationContent {
   loadingLabel: string;
   followUpsLabel: string;
   previewNotice: string;
+  rateLimitMessage: string;
 }
 
 export interface BrandConfig {

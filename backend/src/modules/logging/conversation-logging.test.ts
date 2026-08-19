@@ -37,6 +37,10 @@ function avaOutcome(content: string, extras?: {
     searchStatus: string | null;
     searchProvider: string | null;
     searchResultCount: number;
+    searchDurationMs: number | null;
+    promptTokens: number | null;
+    completionTokens: number | null;
+    totalTokens: number | null;
   }>;
 }) {
   return {
@@ -60,6 +64,10 @@ function avaOutcome(content: string, extras?: {
       searchStatus: "not_needed",
       searchProvider: null,
       searchResultCount: 0,
+      searchDurationMs: null,
+      promptTokens: null,
+      completionTokens: null,
+      totalTokens: null,
       ...extras?.telemetry,
     },
   };
@@ -211,6 +219,28 @@ describe("anonymous conversation logging", () => {
         url: "https://www.harveynorman.com.au/example-dyson",
       },
     ]);
+  });
+
+  it("stores token metadata and search duration on successful turns", async () => {
+    const repo = new MemoryConversationRepository();
+    await sendConversationMessage(userRequest("convo_tokens", "How much is it today?"), {
+      logging: createLoggingService(repo),
+      completeTurn: async () =>
+        avaOutcome("I found an observed listing.", {
+          telemetry: {
+            searchUsed: true,
+            searchDurationMs: 812,
+            promptTokens: 120,
+            completionTokens: 40,
+            totalTokens: 160,
+          },
+        }),
+    });
+    const turn = repo.turns[0];
+    assert.equal(turn?.promptTokens, 120);
+    assert.equal(turn?.completionTokens, 40);
+    assert.equal(turn?.totalTokens, 160);
+    assert.equal(turn?.searchDurationMs, 812);
   });
 
   it("H: model-invented URLs are not stored", async () => {

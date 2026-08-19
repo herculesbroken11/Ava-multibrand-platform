@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { API_ERROR_CODES } from "@product-reviews/contracts";
 import { AppError } from "../../common/errors/app-error";
+import { aiConcurrencyGate } from "../../common/gates";
 import { env } from "../../config/env";
 import type { LlmCompletionInput, LlmCompletionResult, LlmProvider } from "./llm-provider";
 import { mapLlmProviderError } from "./map-provider-error";
@@ -29,19 +30,21 @@ export function createOpenAiProvider(options?: {
       });
 
       try {
-        const completion = await client.chat.completions.create({
-          model,
-          temperature: 0.4,
-          max_tokens: input.maxOutputTokens,
-          response_format: { type: "json_object" },
-          messages: [
-            { role: "system", content: input.system },
-            ...input.messages.map((message) => ({
-              role: message.role,
-              content: message.content,
-            })),
-          ],
-        });
+        const completion = await aiConcurrencyGate.run(() =>
+          client.chat.completions.create({
+            model,
+            temperature: 0.4,
+            max_tokens: input.maxOutputTokens,
+            response_format: { type: "json_object" },
+            messages: [
+              { role: "system", content: input.system },
+              ...input.messages.map((message) => ({
+                role: message.role,
+                content: message.content,
+              })),
+            ],
+          }),
+        );
 
         const text = completion.choices[0]?.message?.content?.trim();
         if (!text) {
@@ -52,7 +55,18 @@ export function createOpenAiProvider(options?: {
           );
         }
 
-        return { text };
+        const usage = completion.usage;
+
+        return {
+          text,
+          usage: usage
+            ? {
+                promptTokens: usage.prompt_tokens ?? null,
+                completionTokens: usage.completion_tokens ?? null,
+                totalTokens: usage.total_tokens ?? null,
+              }
+            : undefined,
+        };
       } catch (error) {
         throw mapLlmProviderError(error);
       }

@@ -1,5 +1,6 @@
 "use client";
 
+import { API_ERROR_CODES } from "@product-reviews/contracts";
 import { useEffect, useRef } from "react";
 import type { BrandConfig } from "@/brands/types";
 import { ConversationComposer } from "@/components/conversation/ConversationComposer";
@@ -25,6 +26,7 @@ export function ConversationView({
     sendUserMessage,
     retry,
     followUps,
+    errorCode,
   } = useConversationSession({ brand, initialQuestion });
   const endRef = useRef<HTMLDivElement>(null);
   const latestAva = [...messages].reverse().find((message) => message.role === "ava");
@@ -38,10 +40,16 @@ export function ConversationView({
     });
   }, [messages, isLoading, hasError, followUps]);
 
+  const busyMessage =
+    errorCode === API_ERROR_CODES.RATE_LIMITED ||
+    errorCode === API_ERROR_CODES.CAPACITY_LIMITED
+      ? brand.conversation.rateLimitMessage
+      : brand.conversation.errorMessage;
+
   const statusText = isLoading
     ? brand.conversation.loadingLabel
     : hasError
-      ? brand.conversation.errorMessage
+      ? busyMessage
       : latestAva?.content;
 
   return (
@@ -83,7 +91,11 @@ export function ConversationView({
           )}
           {hasError ? (
             <div className="mt-4 max-w-[min(42rem,100%)]">
-              <ConversationError brand={brand} onRetry={retry} />
+              <ConversationError
+                brand={brand}
+                onRetry={retry}
+                message={busyMessage}
+              />
             </div>
           ) : null}
           {followUps.length > 0 ? (
