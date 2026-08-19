@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ava
+      POSTGRES_PASSWORD: ava
+      POSTGRES_DB: productreviews
+    ports:
+      - "5432:5432"
+    volumes:
+      - productreviews_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ava -d productreviews"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  productreviews_pg:

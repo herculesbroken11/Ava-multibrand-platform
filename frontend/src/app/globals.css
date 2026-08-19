@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  --brand-primary: #2e7d32;
+  --brand-primary-hover: #256628;
+  --brand-primary-soft: #e8f3e9;
+  --brand-heading: #111111;
+  --brand-body: #3a3a3a;
+  --brand-muted: #6f6b66;
+  --brand-background: #ffffff;
+  --brand-surface: #f5f4f2;
+  --brand-card: #ffffff;
+  --brand-accent: #ffc107;
+  --brand-footer: #2a2a2a;
+  --brand-on-primary: #ffffff;
+  --brand-on-accent: #111111;
+  --brand-border: #e6e2dc;
+}
+
+@theme inline {
+  --color-brand: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-brand-soft: var(--brand-primary-soft);
+  --color-heading: var(--brand-heading);
+  --color-body: var(--brand-body);
+  --color-muted: var(--brand-muted);
+  --color-page: var(--brand-background);
+  --color-surface: var(--brand-surface);
+  --color-card: var(--brand-card);
+  --color-accent: var(--brand-accent);
+  --color-footer: var(--brand-footer);
+  --color-on-primary: var(--brand-on-primary);
+  --color-on-accent: var(--brand-on-accent);
+  --color-line: var(--brand-border);
+  --font-sans: var(--font-plus-jakarta);
+  --font-script: var(--font-caveat);
+  --font-serif: var(--font-source-serif);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  background: var(--brand-background);
+  color: var(--brand-body);
+  font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+.site-shell {
+  width: 100%;
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: clamp(1.15rem, 4vw, 4.5rem);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--brand-heading);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.font-script {
+  font-family: var(--font-caveat), "Segoe Script", "Comic Sans MS", cursive;
+  font-weight: 700;
+}
+
+.font-serif {
+  font-family: var(--font-source-serif), "Iowan Old Style", Georgia, serif;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
+@keyframes ava-typing {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.ava-typing-dot {
+  animation: ava-typing 1.2s ease-in-out infinite;
+}
+
+.ava-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ava-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

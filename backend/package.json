@@ -1,0 +1,30 @@
+{
+  "name": "@product-reviews/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "db:migrate": "tsx src/modules/database/migrate.ts",
+    "test": "tsx --test src/modules/ava/ava.test.ts src/modules/ai/map-provider-error.test.ts src/modules/search/search.test.ts src/config/env.test.ts src/modules/logging/logging-service.test.ts src/modules/logging/conversation-logging.test.ts src/modules/logging/postgres-conversation-repository.test.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@product-reviews/contracts": "*",
+    "fastify": "^5.6.1",
+    "openai": "^4.104.0",
+    "pg": "^8.23.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "embedded-postgres": "^18.4.0-beta.17",
+    "tsx": "^4.20.6",
+    "typescript": "^5"
+  }
+}
