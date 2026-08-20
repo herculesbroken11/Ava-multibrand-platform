@@ -27,6 +27,60 @@ import { composeAvaSystemPrompt } from "./ava-system-prompt";
 import { buildLlmHistory } from "./history";
 import { parseAvaModelOutput } from "./output-parser";
 
+export class AppErrorWithTelemetry extends AppError {
+  readonly telemetry: AvaTurnTelemetry;
+
+  constructor(
+    statusCode: number,
+    code: string,
+    message: string,
+    telemetry: AvaTurnTelemetry,
+  ) {
+    super(statusCode, code, message);
+    this.name = "AppErrorWithTelemetry";
+    this.telemetry = telemetry;
+  }
+}
+
+export function telemetryFromError(error: unknown): AvaTurnTelemetry | undefined {
+  if (error instanceof AppErrorWithTelemetry) return error.telemetry;
+  return undefined;
+}
+
+function searchTelemetry(
+  bundle: RetrievalBundle,
+  providerName: string,
+): AvaTurnTelemetry {
+  return {
+    aiProvider: env.AI_PROVIDER,
+    aiModel: env.AI_MODEL,
+    searchUsed: bundle.status !== "not_needed",
+    searchIntent: bundle.intent,
+    searchStatus: bundle.status,
+    searchProvider: bundle.status === "not_needed" ? null : providerName,
+    searchResultCount: bundle.results.length,
+    searchDurationMs: bundle.durationMs ?? null,
+    promptTokens: null,
+    completionTokens: null,
+    totalTokens: null,
+  };
+}
+
+function rethrowWithSearchTelemetry(
+  error: unknown,
+  telemetry: AvaTurnTelemetry,
+): never {
+  if (error instanceof AppError) {
+    throw new AppErrorWithTelemetry(error.statusCode, error.code, error.message, telemetry);
+  }
+  throw new AppErrorWithTelemetry(
+    502,
+    API_ERROR_CODES.PROVIDER_UNAVAILABLE,
+    "Ava couldn’t reply just then. Please try again.",
+    telemetry,
+  );
+}
+
 export interface AvaTurnOptions {
   search?: SearchProvider;
   searchProviderName?: string;
@@ -95,7 +149,21 @@ async function retrievePublicInformation(
     results = raw.slice(0, env.SEARCH_MAX_RESULTS);
     status = results.length > 0 ? "success" : "no_results";
   } catch (error) {
-    if (error instanceof AppError) throw error;
+    if (error instanceof AppError) {
+      rethrowWithSearchTelemetry(error, {
+        aiProvider: env.AI_PROVIDER,
+        aiModel: env.AI_MODEL,
+        searchUsed: true,
+        searchIntent: decision.intent,
+        searchStatus: "failed",
+        searchProvider: providerName,
+        searchResultCount: 0,
+        searchDurationMs: Date.now() - started,
+        promptTokens: null,
+        completionTokens: null,
+        totalTokens: null,
+      });
+    }
     status = "failed";
     results = [];
   }
@@ -130,6 +198,7 @@ async function executeAvaTurn(
   const search = options.search ?? getSearchProvider();
   const providerName = options.searchProviderName ?? env.SEARCH_PROVIDER;
   const { bundle, essential } = await retrievePublicInformation(input, search, providerName);
+  const searchMeta = searchTelemetry(bundle, providerName);
 
   const system = composeAvaSystemPrompt(input.brand, {
     retrievedPublicInformation: formatRetrievedContext(bundle, essential),
@@ -144,21 +213,28 @@ async function executeAvaTurn(
     );
   }
 
-  const { text, usage } = await llm.complete({
-    system,
-    messages: history,
-    maxOutputTokens: env.AI_MAX_OUTPUT_TOKENS,
-    timeoutMs: env.AI_TIMEOUT_MS,
-  });
+  let text: string;
+  let usage: Awaited<ReturnType<LlmProvider["complete"]>>["usage"];
+  try {
+    ({ text, usage } = await llm.complete({
+      system,
+      messages: history,
+      maxOutputTokens: env.AI_MAX_OUTPUT_TOKENS,
+      timeoutMs: env.AI_TIMEOUT_MS,
+    }));
+  } catch (error) {
+    rethrowWithSearchTelemetry(error, searchMeta);
+  }
 
   let parsed;
   try {
     parsed = parseAvaModelOutput(text);
   } catch {
-    throw new AppError(
+    throw new AppErrorWithTelemetry(
       502,
       API_ERROR_CODES.PROVIDER_INVALID_RESPONSE,
       "Ava couldn’t reply just then. Please try again.",
+      searchMeta,
     );
   }
 

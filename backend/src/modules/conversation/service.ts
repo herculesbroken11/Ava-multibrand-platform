@@ -8,7 +8,7 @@ import { AppError } from "../../common/errors/app-error";
 import { env } from "../../config/env";
 import { latestUserMessageContent } from "../../common/utils/ids";
 import type { AvaTurnOutcome } from "../ava/orchestrator";
-import { respondWithAva } from "../ava/orchestrator";
+import { respondWithAva, telemetryFromError } from "../ava/orchestrator";
 import { assertBrandMatchesOrigin } from "../brands/origin-guard";
 import { getBackendBrand } from "../brands/registry";
 import { getLoggingService } from "../logging/get-logging-service";
@@ -118,19 +118,21 @@ export async function sendConversationMessage(
     const responseDurationMs = Date.now() - started;
 
     if (shouldLogFailedTurn(error)) {
+      const search = telemetryFromError(error);
       await logging.recordFailedTurn({
         clientSessionId: input.sessionId,
         brand,
         userMessage,
-        aiProvider: env.AI_PROVIDER,
-        aiModel: env.AI_PROVIDER === "mock" ? "mock" : env.AI_MODEL,
+        aiProvider: search?.aiProvider ?? env.AI_PROVIDER,
+        aiModel: search?.aiModel ?? (env.AI_PROVIDER === "mock" ? "mock" : env.AI_MODEL),
         responseDurationMs,
         errorCode: errorCodeOf(error),
-        searchUsed: false,
-        searchIntent: null,
-        searchStatus: null,
-        searchProvider: null,
-        searchResultCount: 0,
+        searchUsed: search?.searchUsed ?? false,
+        searchIntent: search?.searchIntent ?? null,
+        searchStatus: search?.searchStatus ?? null,
+        searchProvider: search?.searchProvider ?? null,
+        searchResultCount: search?.searchResultCount ?? 0,
+        searchDurationMs: search?.searchDurationMs ?? null,
       });
     }
 

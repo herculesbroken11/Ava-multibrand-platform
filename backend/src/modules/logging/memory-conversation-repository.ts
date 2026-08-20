@@ -69,7 +69,7 @@ export class MemoryConversationRepository implements ConversationLogRepository {
       searchStatus: input.searchStatus,
       searchProvider: input.searchProvider,
       searchResultCount: input.searchResultCount,
-      searchDurationMs: null,
+      searchDurationMs: input.searchDurationMs ?? null,
       promptTokens: null,
       completionTokens: null,
       totalTokens: null,

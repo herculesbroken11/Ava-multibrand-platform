@@ -24,6 +24,7 @@ export function MessageList({
 
   return (
     <div
+      role="region"
       className={cn("min-w-0 space-y-4 md:space-y-5", className)}
       aria-label={`Conversation with ${brand.ava.name}`}
     >

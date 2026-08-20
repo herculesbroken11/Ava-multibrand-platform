@@ -127,12 +127,18 @@ export function ContactPageView({
   );
 }
 
-export function informationPageMetadata(page: InformationPage | ContactPage) {
+export function informationPageMetadata(
+  page: InformationPage | ContactPage,
+  brand?: BrandConfig,
+  path?: string,
+) {
   return {
     title: page.title,
     robots:
       page.status === "final"
         ? undefined
         : { index: false as const, follow: false as const },
+    alternates:
+      brand && path ? { canonical: `https://${brand.domain}${path}` } : undefined,
   };
 }

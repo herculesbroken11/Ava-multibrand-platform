@@ -36,6 +36,7 @@ export interface FailedTurnLog {
   searchStatus: string | null;
   searchProvider: string | null;
   searchResultCount: number;
+  searchDurationMs?: number | null;
 }
 
 export interface PersistenceResult {

@@ -38,16 +38,12 @@ export async function generateMetadata(): Promise<Metadata> {
     description: brand.seo.description,
     applicationName: brand.name,
     metadataBase: new URL(`https://${brand.domain}`),
-    alternates: {
-      canonical: `https://${brand.domain}`,
-    },
     icons: brand.favicon ? { icon: brand.favicon } : undefined,
     openGraph: {
       title: brand.seo.title,
       description: brand.seo.description,
       siteName: brand.name,
       type: "website",
-      url: `https://${brand.domain}`,
       images: brand.seo.ogImage ? [{ url: brand.seo.ogImage }] : undefined,
     },
   };
@@ -69,6 +65,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang={brand.locale ?? "en-AU"}
+      data-scroll-behavior="smooth"
       className={`${plusJakarta.variable} ${caveat.variable} ${sourceSerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-page font-sans text-body">

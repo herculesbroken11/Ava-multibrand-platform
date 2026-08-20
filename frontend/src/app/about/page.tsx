@@ -5,7 +5,7 @@ export async function generateMetadata() {
   const brand = await resolveRequestBrand();
   const page = brand?.pages.about;
   if (!page) return { title: "About", robots: { index: false, follow: false } };
-  return informationPageMetadata(page);
+  return informationPageMetadata(page, brand, "/about");
 }
 
 export default async function AboutPage() {

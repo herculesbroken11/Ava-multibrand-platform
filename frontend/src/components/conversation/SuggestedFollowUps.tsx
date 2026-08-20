@@ -1,3 +1,6 @@
+"use client";
+
+import { useId } from "react";
 import type { BrandConfig } from "@/brands/types";
 
 export function SuggestedFollowUps({
@@ -11,14 +14,15 @@ export function SuggestedFollowUps({
   disabled?: boolean;
   onSelect: (text: string) => void;
 }) {
+  const headingId = useId();
   if (followUps.length === 0) return null;
 
   return (
     <div>
-      <p className="mb-2 text-xs font-bold tracking-wide text-muted uppercase">
+      <p id={headingId} className="mb-2 text-xs font-bold tracking-wide text-muted uppercase">
         {brand.conversation.followUpsLabel}
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-labelledby={headingId}>
         {followUps.map((followUp) => (
           <button
             key={followUp}

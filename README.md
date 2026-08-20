@@ -9,7 +9,7 @@ shared/     Serializable API contracts (@product-reviews/contracts)
 docs/       Phase 1 step records and launch checklists
 ```
 
-Phase 1 Steps 1–10 are complete. This repository is **not** a production deployment.
+Phase 1 Steps 1–11 are complete. This repository is **not** a production deployment.
 
 ## Local run
 
@@ -31,6 +31,7 @@ Copy `frontend/.env.example` → `frontend/.env` and `backend/.env.example` → 
 | `npm run lint` | Frontend ESLint + backend `tsc` |
 | `npm run typecheck` | shared, backend, and frontend `tsc --noEmit` |
 | `npm run test` | Backend tests (no paid provider calls) |
+| `npm run test:e2e` | Playwright + axe (mock AI/search; Chromium/Firefox/WebKit) |
 | `npm run validate:brands` | Frontend + backend brand configuration |
 | `npm run validate:production` | Production readiness (PASS / WARNING / BLOCKER) |
 | `npm run db:up` | Local Postgres via Docker Compose |

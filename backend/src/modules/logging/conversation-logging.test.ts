@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { API_ERROR_CODES } from "@product-reviews/contracts";
 import { AppError } from "../../common/errors/app-error";
+import { AppErrorWithTelemetry } from "../ava/orchestrator";
 import { sendConversationMessage } from "../conversation/service";
 import { getBackendBrand } from "../brands/registry";
 import { createLoggingService } from "./logging-service";
@@ -283,6 +284,46 @@ describe("anonymous conversation logging", () => {
 
     assert.equal(repo.turns[0]?.requestStatus, "failed");
     assert.equal(repo.turns[0]?.errorCode, API_ERROR_CODES.PROVIDER_TIMEOUT);
+    assert.equal(repo.turns[0]?.avaResponse, null);
+  });
+
+  it("I2: provider failure after search keeps search telemetry on the failed turn", async () => {
+    const repo = new MemoryConversationRepository();
+    await assert.rejects(
+      () =>
+        sendConversationMessage(userRequest("convo_i2", "What is the current Australian price of a Dyson V15?"), {
+          logging: createLoggingService(repo),
+          completeTurn: async () => {
+            throw new AppErrorWithTelemetry(
+              504,
+              API_ERROR_CODES.PROVIDER_TIMEOUT,
+              "Ava took too long to reply. Please try again.",
+              {
+                aiProvider: "openai",
+                aiModel: "gpt-4o-mini",
+                searchUsed: true,
+                searchIntent: "current_price",
+                searchStatus: "success",
+                searchProvider: "openai",
+                searchResultCount: 3,
+                searchDurationMs: 812,
+                promptTokens: null,
+                completionTokens: null,
+                totalTokens: null,
+              },
+            );
+          },
+        }),
+      (error: unknown) => error instanceof AppError && error.code === API_ERROR_CODES.PROVIDER_TIMEOUT,
+    );
+
+    assert.equal(repo.turns[0]?.requestStatus, "failed");
+    assert.equal(repo.turns[0]?.searchUsed, true);
+    assert.equal(repo.turns[0]?.searchIntent, "current_price");
+    assert.equal(repo.turns[0]?.searchStatus, "success");
+    assert.equal(repo.turns[0]?.searchProvider, "openai");
+    assert.equal(repo.turns[0]?.searchResultCount, 3);
+    assert.equal(repo.turns[0]?.searchDurationMs, 812);
     assert.equal(repo.turns[0]?.avaResponse, null);
   });
 

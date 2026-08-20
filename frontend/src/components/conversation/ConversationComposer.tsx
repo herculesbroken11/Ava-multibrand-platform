@@ -1,9 +1,9 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useId, useRef, useState } from "react";
 import type { BrandConfig } from "@/brands/types";
 import { ArrowUpIcon } from "@/components/ui/icons";
-import { MAX_QUESTION_LENGTH } from "@/lib/ask-ava";
+import { MAX_QUESTION_LENGTH, clampQuestion } from "@/lib/ask-ava";
 
 function resizeTextarea(element: HTMLTextAreaElement) {
   element.style.height = "auto";
@@ -21,6 +21,8 @@ export function ConversationComposer({
 }) {
   const id = useId();
   const formRef = useRef<HTMLFormElement>(null);
+  const [draft, setDraft] = useState("");
+  const canSend = !disabled && clampQuestion(draft).length > 0;
 
   return (
     <form
@@ -28,7 +30,7 @@ export function ConversationComposer({
       className="border-t border-line bg-page pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       onSubmit={(event) => {
         event.preventDefault();
-        if (disabled) return;
+        if (!canSend) return;
 
         const formData = new FormData(event.currentTarget);
         const value = String(formData.get("message") ?? "");
@@ -36,6 +38,7 @@ export function ConversationComposer({
         if (!sent) return;
 
         event.currentTarget.reset();
+        setDraft("");
         const textarea = event.currentTarget.querySelector("textarea");
         if (textarea) {
           textarea.style.height = "auto";
@@ -57,7 +60,10 @@ export function ConversationComposer({
             enterKeyHint="send"
             placeholder={brand.askAva.placeholder}
             className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-4 py-2.5 text-[0.98rem] leading-6 text-heading outline-none placeholder:text-muted disabled:opacity-60"
-            onInput={(event) => resizeTextarea(event.currentTarget)}
+            onInput={(event) => {
+              setDraft(event.currentTarget.value);
+              resizeTextarea(event.currentTarget);
+            }}
             onKeyDown={(event) => {
               if (event.key !== "Enter" || event.shiftKey) return;
               event.preventDefault();
@@ -66,7 +72,7 @@ export function ConversationComposer({
           />
           <button
             type="submit"
-            disabled={disabled}
+            disabled={!canSend}
             aria-label={brand.conversation.sendLabel}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-on-primary transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
           >

@@ -23,9 +23,11 @@ export function ConversationShell({
       )}
     >
       {header}
-      <p className="border-b border-line bg-brand-soft px-4 py-2 text-center text-xs font-medium leading-5 text-heading md:text-sm">
-        {brand.conversation.previewNotice}
-      </p>
+      {process.env.NODE_ENV !== "production" && brand.conversation.previewNotice ? (
+        <p className="border-b border-line bg-brand-soft px-4 py-2 text-center text-xs font-medium leading-5 text-heading md:text-sm">
+          {brand.conversation.previewNotice}
+        </p>
+      ) : null}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
       {footer}
     </div>

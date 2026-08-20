@@ -12,6 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `Ask ${brand.ava.name} — ${brand.name}`,
     description: brand.seo.description,
+    robots: { index: false, follow: false },
+    alternates: { canonical: `https://${brand.domain}/ask-ava` },
   };
 }
 

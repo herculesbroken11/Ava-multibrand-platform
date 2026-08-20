@@ -23,7 +23,7 @@ export function ComparisonTable({
   }, [brandId, turnNumber, responseKey]);
 
   return (
-    <section className="mt-4 min-w-0">
+    <section className="mt-4 min-w-0" aria-label={table.caption || "Comparison"}>
       {table.caption ? (
         <p className="mb-2 text-xs font-semibold tracking-wide text-muted">
           {table.caption}
@@ -57,11 +57,8 @@ export function ComparisonTable({
         ))}
       </ul>
 
-      <div className="hidden min-w-0 lg:block">
-        <table className="w-full table-fixed border-collapse text-left text-sm">
-          {table.caption ? (
-            <caption className="sr-only">{table.caption}</caption>
-          ) : null}
+      <div className="hidden min-w-0 overflow-x-auto lg:block">
+        <table className="w-full min-w-[36rem] table-fixed border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-brand-soft">
               {table.columns.map((column) => (

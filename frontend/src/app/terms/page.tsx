@@ -4,7 +4,7 @@ import { getRequestBrand, resolveRequestBrand } from "@/lib/request-brand";
 export async function generateMetadata() {
   const brand = await resolveRequestBrand();
   if (!brand) return { title: "Terms & Conditions", robots: { index: false, follow: false } };
-  return informationPageMetadata(brand.pages.terms);
+  return informationPageMetadata(brand.pages.terms, brand, "/terms");
 }
 
 export default async function TermsPage() {

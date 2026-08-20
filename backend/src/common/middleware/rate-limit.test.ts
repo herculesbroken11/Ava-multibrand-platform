@@ -111,6 +111,33 @@ describe("conversation rate limit", () => {
     assert.equal(third.statusCode, 429);
   });
 
+  it("does not let a new sessionId bypass the IP limiter", async () => {
+    const app = await buildLimitedApp({
+      settings: { enabled: true, max: 2, windowMs: 60_000 },
+    });
+    apps.push(app);
+
+    const first = await app.inject({
+      method: "POST",
+      url: CONVERSATION_MESSAGE_PATH,
+      payload: { sessionId: "convo_one" },
+    });
+    const second = await app.inject({
+      method: "POST",
+      url: CONVERSATION_MESSAGE_PATH,
+      payload: { sessionId: "convo_two" },
+    });
+    const third = await app.inject({
+      method: "POST",
+      url: CONVERSATION_MESSAGE_PATH,
+      payload: { sessionId: "convo_three" },
+    });
+
+    assert.equal(first.statusCode, 200);
+    assert.equal(second.statusCode, 200);
+    assert.equal(third.statusCode, 429);
+  });
+
   it("uses X-Forwarded-For as the client IP when TRUST_PROXY is true", async () => {
     const app = await buildLimitedApp({ trustProxy: true });
     apps.push(app);

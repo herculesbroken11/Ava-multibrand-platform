@@ -33,6 +33,7 @@ export function SourceReferences({
               }}
             >
               {source.title}
+              <span className="sr-only"> (opens in a new tab)</span>
             </a>
             <p className="text-xs font-medium text-muted">
               {source.domain}
