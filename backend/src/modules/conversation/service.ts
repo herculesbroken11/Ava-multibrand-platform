@@ -9,6 +9,7 @@ import { env } from "../../config/env";
 import { latestUserMessageContent } from "../../common/utils/ids";
 import type { AvaTurnOutcome } from "../ava/orchestrator";
 import { respondWithAva } from "../ava/orchestrator";
+import { assertBrandMatchesOrigin } from "../brands/origin-guard";
 import { getBackendBrand } from "../brands/registry";
 import { getLoggingService } from "../logging/get-logging-service";
 import type { ConversationLoggingService } from "../logging/logging-types";
@@ -17,6 +18,7 @@ import type { ConversationRequestBody } from "./schemas";
 export interface ConversationServiceDeps {
   completeTurn?: (input: Parameters<typeof respondWithAva>[0]) => Promise<AvaTurnOutcome>;
   logging?: ConversationLoggingService;
+  origin?: string;
 }
 
 function assertLatestUserMessage(
@@ -46,6 +48,7 @@ function shouldLogFailedTurn(error: unknown): boolean {
   return (
     error.code !== API_ERROR_CODES.VALIDATION_ERROR &&
     error.code !== API_ERROR_CODES.UNKNOWN_BRAND &&
+    error.code !== API_ERROR_CODES.BRAND_ORIGIN_MISMATCH &&
     error.code !== API_ERROR_CODES.RATE_LIMITED
   );
 }
@@ -73,6 +76,7 @@ export async function sendConversationMessage(
     );
   }
 
+  assertBrandMatchesOrigin(brand.id, deps.origin);
   assertLatestUserMessage(input.messages);
 
   const logging = deps.logging ?? getLoggingService();

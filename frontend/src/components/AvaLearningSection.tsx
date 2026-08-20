@@ -1,7 +1,10 @@
-import Link from "next/link";
+"use client";
+
 import type { BrandConfig } from "@/brands/types";
+import { ContentLink } from "@/components/ContentLink";
 import { ScriptText } from "@/components/ui/ScriptText";
 import { ArrowRightIcon, ChatIcon } from "@/components/ui/icons";
+import { trackHelpAvaSmarterClick } from "@/lib/analytics/events";
 
 export function AvaLearningSection({ brand }: { brand: BrandConfig }) {
   return (
@@ -20,13 +23,14 @@ export function AvaLearningSection({ brand }: { brand: BrandConfig }) {
           <p className="max-w-xl text-[clamp(0.98rem,1.2vw,1.12rem)] leading-6 text-white/80">
             {brand.learning.body}
           </p>
-          <Link
+          <ContentLink
             href={brand.learning.ctaHref}
+            onClick={() => trackHelpAvaSmarterClick({ brandId: brand.id })}
             className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-[0.95rem] font-bold text-on-accent transition-opacity hover:opacity-90"
           >
             {brand.learning.cta}
             <ArrowRightIcon className="h-4 w-4" />
-          </Link>
+          </ContentLink>
         </div>
       </div>
     </section>

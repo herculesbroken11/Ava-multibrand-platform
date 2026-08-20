@@ -135,7 +135,8 @@ describe("anonymous conversation logging", () => {
 
   it("E: different brand IDs do not collide on the same client session id", async () => {
     const repo = new MemoryConversationRepository();
-    const other = { ...brand, id: "otherbrand", domain: "other.example" };
+    const other = getBackendBrand("testbrand");
+    assert.ok(other);
     await repo.recordSuccessfulTurn({
       clientSessionId: "shared",
       brand,

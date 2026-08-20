@@ -97,6 +97,7 @@ export const API_ERROR_CODES = {
   PROVIDER_INVALID_RESPONSE: "PROVIDER_INVALID_RESPONSE",
   RATE_LIMITED: "RATE_LIMITED",
   CAPACITY_LIMITED: "CAPACITY_LIMITED",
+  BRAND_ORIGIN_MISMATCH: "BRAND_ORIGIN_MISMATCH",
   INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
 
@@ -114,6 +115,7 @@ export const ANALYTICS_FORBIDDEN_KEYS = [
   "url",
   "href",
   "sources",
+  "title",
   "user_message",
   "ava_response",
   "session_id",
@@ -161,3 +163,26 @@ export function analyticsPayloadContainsForbidden(
     Object.prototype.hasOwnProperty.call(payload, key),
   );
 }
+
+export {
+  BRAND_IDS,
+  DEVELOPMENT_HOSTS,
+  SHARED_BRANDS,
+  findDuplicateHostnames,
+  getSharedBrand,
+  isBrandId,
+  isDevelopmentHost,
+  normalizeHostname,
+  originHostname,
+  parseOriginAllowList,
+  productionHttpsOrigins,
+  resolveBrandByHost,
+  selectRequestHost,
+} from "./brands";
+export type {
+  BrandId,
+  BrandKind,
+  ResolveBrandHostOptions,
+  SharedBrandRecord,
+} from "./brands";
+

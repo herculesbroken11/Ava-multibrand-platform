@@ -1,6 +1,17 @@
-import type { SourceReference } from "@/conversation/types";
+"use client";
 
-export function SourceReferences({ sources }: { sources: SourceReference[] }) {
+import type { SourceReference } from "@/conversation/types";
+import { trackSourceOpen } from "@/lib/analytics/events";
+
+export function SourceReferences({
+  sources,
+  brandId,
+  turnNumber,
+}: {
+  sources: SourceReference[];
+  brandId?: string;
+  turnNumber?: number;
+}) {
   if (sources.length === 0) return null;
 
   return (
@@ -16,6 +27,10 @@ export function SourceReferences({ sources }: { sources: SourceReference[] }) {
               target="_blank"
               rel="noopener noreferrer"
               className="block rounded-lg text-sm font-semibold break-words text-heading hover:text-brand"
+              onClick={() => {
+                if (!brandId) return;
+                trackSourceOpen({ brandId, turnNumber });
+              }}
             >
               {source.title}
             </a>

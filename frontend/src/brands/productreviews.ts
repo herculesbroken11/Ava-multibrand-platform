@@ -1,11 +1,40 @@
-import type { BrandConfig } from "@/brands/types";
+import type { BrandConfig, InformationPage } from "./types";
+import { PRODUCTREVIEWS_APPROVED_COPY as copy } from "./productreviews-approved-copy";
+
+function unpublishedLegalPage(title: string, kind: string): InformationPage {
+  return {
+    title,
+    status: "placeholder",
+    intro:
+      "This page is an internal placeholder. The client has not supplied final copy, and this text is not a published legal policy.",
+    blocks: [
+      {
+        type: "heading",
+        text: "Not a published legal policy",
+      },
+      {
+        type: "paragraph",
+        text: `Final ${kind} content for ProductReviews.com.au has not been supplied yet. Do not treat this page as live legal terms or advice.`,
+      },
+      {
+        type: "bullets",
+        items: [
+          "Public launch is blocked until the client supplies approved text.",
+          "This placeholder exists so the route and layout can be reviewed in development.",
+        ],
+      },
+    ],
+  };
+}
 
 const asset = (path: string) => `/brands/productreviews/${path}`;
 
 export const productReviewsBrand: BrandConfig = {
   id: "productreviews",
+  kind: "production",
   domain: "productreviews.com.au",
   name: "ProductReviews.com.au",
+  locale: "en-AU",
   colors: {
     primary: "#2E7D32",
     primaryHover: "#256628",
@@ -60,27 +89,23 @@ export const productReviewsBrand: BrandConfig = {
     ctaHref: "/#ask-ava",
   },
   hero: {
-    heading: "Smart choices",
-    headingAccent: "made",
-    headingEnd: "simple.",
-    trustItems: [
-      "No fake reviews. No paid placements.",
-      "Just real research by real people using real products.",
-    ],
-    handwrittenNote: "We’ve done the hard yards so you don’t have to!",
-    avaIntro: "Hi, I’m Ava",
-    avaRole: "your AI product\nexpert",
+    heading: copy.hero.heading,
+    headingAccent: copy.hero.headingAccent,
+    trustItems: [...copy.hero.trustItems],
+    handwrittenNote: copy.hero.handwrittenNote,
+    avaIntro: copy.hero.avaIntro,
+    avaRole: copy.hero.avaRole,
   },
   askAva: {
-    headlinePrefix: "Ask Ava before you buy",
-    headlineAccent: "ANYTHING!",
-    placeholder: "Ask Ava anything about a product…",
-    cta: "ASK AVA",
+    headlinePrefix: copy.askAva.headlinePrefix,
+    headlineAccent: copy.askAva.headlineAccent,
+    placeholder: copy.askAva.placeholder,
+    cta: copy.askAva.cta,
     statusText: "Ava is online and ready to help",
   },
   suggestedQuestions: {
-    heading: "Not sure where to start?",
-    subheading: "Try asking Ava one of these…",
+    heading: copy.suggestedQuestions.heading,
+    subheading: copy.suggestedQuestions.subheading,
     footerNote: "Ask your question or try one above!",
     questions: [
       {
@@ -127,14 +152,9 @@ export const productReviewsBrand: BrandConfig = {
   },
   independence: {
     badge: "Our promise",
-    headline: "Independent advice.",
-    subtitle: "That’s our promise.",
-    paragraphs: [
-      "ProductReviews.com.au exists to help you make better buying decisions.",
-      "Ava’s recommendations are based on what’s right for you — not on which retailer, manufacturer or brand pays the most.",
-      "Where we have a commercial relationship that may earn us a commission, we’ll make that clear.",
-      "Commercial relationships must never determine Ava’s recommendations.",
-    ],
+    headline: copy.independence.headline,
+    subtitle: copy.independence.subtitle,
+    paragraphs: [...copy.independence.paragraphs],
   },
   trustPrinciples: [
     {
@@ -163,15 +183,15 @@ export const productReviewsBrand: BrandConfig = {
     },
   ],
   learning: {
-    heading: "Ava is always learning.",
-    body: "We’re continually improving Ava and expanding the products she can help you research. If there’s something you’d like her to know more about, we’d love to hear from you.",
-    cta: "Help make Ava smarter",
+    heading: copy.learning.heading,
+    body: copy.learning.body,
+    cta: copy.learning.cta,
     ctaHref: "/contact",
+    ctaDestinationStatus: "pending",
   },
   footer: {
-    tagline:
-      "Independent product research to help Australians make better buying decisions.",
-    copyright: "© 2026 Next Marketing Pty Ltd. All rights reserved.",
+    tagline: copy.footer.tagline,
+    copyright: copy.footer.copyright,
   },
   legal: [
     { label: "Privacy Policy", href: "/privacy" },
@@ -191,7 +211,7 @@ export const productReviewsBrand: BrandConfig = {
   },
   ava: {
     name: "Ava",
-    introText: "Hi, I’m Ava your AI product expert",
+    introText: copy.hero.avaIntro,
     role: "Independent product research assistant",
     instructions:
       "You are Ava, an independent product research assistant for ProductReviews.com.au. Help Australians choose the right consumer products. Base recommendations on fit for the person’s needs, not on which retailer, manufacturer or brand pays the most. If a commercial relationship may earn a commission, say so clearly. Never let commercial relationships determine recommendations. Be warm, plain-spoken, and specific. Do not invent reviews or claim products were tested if they were not.",
@@ -213,5 +233,30 @@ export const productReviewsBrand: BrandConfig = {
     followUpsLabel: "Suggested next questions",
     previewNotice:
       "Development preview — replies here are sample interface responses, not live product research.",
+  },
+  pages: {
+    privacy: unpublishedLegalPage("Privacy Policy", "Privacy Policy"),
+    terms: unpublishedLegalPage("Terms & Conditions", "Terms & Conditions"),
+    disclaimer: unpublishedLegalPage("Disclaimer", "Disclaimer"),
+    contact: {
+      title: "Contact",
+      heading: "Contact",
+      status: "placeholder",
+      intro:
+        "Final contact details have not been supplied yet. This page is an internal placeholder and is not a public contact listing.",
+      businessName: "ProductReviews.com.au",
+    },
+    about: {
+      title: "About",
+      status: "placeholder",
+      intro:
+        "This page is an internal placeholder. Final About copy has not been supplied by the client.",
+      blocks: [
+        {
+          type: "paragraph",
+          text: "ProductReviews.com.au is an independent product research site. Final About page content will be published when the client supplies it.",
+        },
+      ],
+    },
   },
 };

@@ -1,13 +1,13 @@
 "use client";
 
-import { sanitizeAnalyticsParams } from "@product-reviews/contracts";
 import { sanitizedPageLocation } from "@/lib/analytics/config";
+import {
+  ANALYTICS_EVENTS,
+  createAnalyticsTracker,
+  type AnalyticsTracker,
+} from "@/lib/analytics/runtime";
 
-export const ANALYTICS_EVENTS = {
-  askAvaStart: "ask_ava_start",
-  avaTurn: "ava_turn",
-  avaRetry: "ava_retry",
-} as const;
+export { ANALYTICS_EVENTS };
 
 declare global {
   interface Window {
@@ -21,15 +21,15 @@ function analyticsRuntimeEnabled(): boolean {
   return flag === "true" || flag === "1";
 }
 
-function emit(eventName: string, params: Record<string, unknown>): void {
-  try {
-    if (typeof window === "undefined" || !analyticsRuntimeEnabled()) return;
+const browserTracker: AnalyticsTracker = createAnalyticsTracker({
+  isEnabled: analyticsRuntimeEnabled,
+  send(eventName, params) {
+    if (typeof window === "undefined") return;
 
-    const cleaned = sanitizeAnalyticsParams(params);
     const pageLocation = sanitizedPageLocation();
     const payload = pageLocation
-      ? { ...cleaned, page_location: pageLocation }
-      : cleaned;
+      ? { ...params, page_location: pageLocation }
+      : params;
 
     if (typeof window.gtag === "function") {
       window.gtag("event", eventName, payload);
@@ -38,37 +38,13 @@ function emit(eventName: string, params: Record<string, unknown>): void {
 
     if (!Array.isArray(window.dataLayer)) return;
     window.dataLayer.push({ event: eventName, ...payload });
-  } catch {
-    // Analytics must never break the product UI.
-  }
-}
+  },
+});
 
-export function trackAskAvaStart(input: {
-  brandId: string;
-  entry: "composer" | "suggested_question";
-}): void {
-  emit(ANALYTICS_EVENTS.askAvaStart, {
-    brand_id: input.brandId,
-    entry: input.entry,
-  });
-}
-
-export function trackAvaTurn(input: {
-  brandId: string;
-  result: "success" | "error" | "rate_limited" | "capacity_limited";
-  isFollowUp: boolean;
-  hasSources: boolean;
-}): void {
-  emit(ANALYTICS_EVENTS.avaTurn, {
-    brand_id: input.brandId,
-    result: input.result,
-    is_follow_up: input.isFollowUp,
-    has_sources: input.hasSources,
-  });
-}
-
-export function trackAvaRetry(input: { brandId: string }): void {
-  emit(ANALYTICS_EVENTS.avaRetry, {
-    brand_id: input.brandId,
-  });
-}
+export const trackAskAvaStart = browserTracker.trackAskAvaStart.bind(browserTracker);
+export const trackAvaTurn = browserTracker.trackAvaTurn.bind(browserTracker);
+export const trackAvaRetry = browserTracker.trackAvaRetry.bind(browserTracker);
+export const trackSourceOpen = browserTracker.trackSourceOpen.bind(browserTracker);
+export const trackComparisonView = browserTracker.trackComparisonView.bind(browserTracker);
+export const trackHelpAvaSmarterClick =
+  browserTracker.trackHelpAvaSmarterClick.bind(browserTracker);

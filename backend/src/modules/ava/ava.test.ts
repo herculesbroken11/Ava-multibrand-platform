@@ -181,3 +181,25 @@ describe("orchestrator with a stub LLM", () => {
     assert.equal(result.message.sources, undefined);
   });
 });
+
+describe("brand-specific Ava context", () => {
+  it("keeps ProductReviews Australian-first copy and does not inject fixture category context", () => {
+    const prompt = composeAvaSystemPrompt(brand);
+    assert.match(prompt, /Australian-first defaults/);
+    assert.match(prompt, /AUD/);
+    assert.match(prompt, /Australia/);
+    assert.doesNotMatch(prompt, /TEST FIXTURE ONLY/);
+    assert.doesNotMatch(prompt, /electric vehicles/i);
+  });
+
+  it("injects registered brand categoryContext without changing the shared orchestrator", () => {
+    const fixture = getBackendBrand("testbrand");
+    assert.ok(fixture);
+    const prompt = composeAvaSystemPrompt(fixture);
+    assert.match(prompt, /TEST FIXTURE ONLY/);
+    assert.match(prompt, /Category context/);
+    assert.match(prompt, /NZD/);
+    assert.match(prompt, /New Zealand/);
+    assert.doesNotMatch(prompt, /electric vehicles/i);
+  });
+});

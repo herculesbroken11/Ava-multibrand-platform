@@ -15,6 +15,7 @@ describe("analytics sanitizer", () => {
       result: "success",
       is_follow_up: true,
       has_sources: false,
+      turn_number: 2,
     });
     assert.deepEqual(cleaned, {
       brand_id: "productreviews",
@@ -22,6 +23,7 @@ describe("analytics sanitizer", () => {
       result: "success",
       is_follow_up: true,
       has_sources: false,
+      turn_number: 2,
     });
   });
 
@@ -39,6 +41,8 @@ describe("analytics sanitizer", () => {
       query: question,
       q: question,
       url: "https://example.com/secret",
+      href: "https://example.com/secret",
+      title: "Secret source title",
       sources: "https://example.com/secret",
       user_message: question,
       ava_response: answer,
@@ -53,6 +57,7 @@ describe("analytics sanitizer", () => {
     assert.equal(serialized.includes("self-empty"), false);
     assert.equal(serialized.includes("convo_secret"), false);
     assert.equal(serialized.includes("example.com"), false);
+    assert.equal(serialized.includes("Secret source title"), false);
   });
 
   it("reports forbidden keys before sanitizing", () => {

@@ -52,7 +52,17 @@ function LabeledList({
   );
 }
 
-export function StructuredResponse({ blocks }: { blocks: StructuredBlock[] }) {
+export function StructuredResponse({
+  blocks,
+  brandId,
+  turnNumber,
+  responseKey,
+}: {
+  blocks: StructuredBlock[];
+  brandId?: string;
+  turnNumber?: number;
+  responseKey?: string;
+}) {
   return (
     <div className="mt-3 space-y-3">
       {blocks.map((block, index) => {
@@ -123,9 +133,24 @@ export function StructuredResponse({ blocks }: { blocks: StructuredBlock[] }) {
               </p>
             );
           case "comparison":
-            return <ComparisonTable key={key} table={block.table} />;
+            return (
+              <ComparisonTable
+                key={key}
+                table={block.table}
+                brandId={brandId}
+                turnNumber={turnNumber}
+                responseKey={responseKey}
+              />
+            );
           case "sources":
-            return <SourceReferences key={key} sources={block.sources} />;
+            return (
+              <SourceReferences
+                key={key}
+                sources={block.sources}
+                brandId={brandId}
+                turnNumber={turnNumber}
+              />
+            );
           default:
             return null;
         }

@@ -1,7 +1,7 @@
 import { LandingPage } from "@/components/LandingPage";
-import { getActiveBrand } from "@/lib/brand";
+import { getRequestBrand } from "@/lib/request-brand";
 
-export default function HomePage() {
-  const brand = getActiveBrand();
+export default async function HomePage() {
+  const brand = await getRequestBrand();
   return <LandingPage brand={brand} />;
 }

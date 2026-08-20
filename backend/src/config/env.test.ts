@@ -40,13 +40,33 @@ describe("rate limit and concurrency environment", () => {
     assert.equal(parsed.RATE_LIMIT_MAX, 30);
     assert.equal(parsed.RATE_LIMIT_WINDOW_MS, 60_000);
     assert.equal(parsed.TRUST_PROXY, false);
+    assert.equal(parsed.TRUST_FORWARDED_HOST, false);
+    assert.equal(parsed.DEFAULT_DEV_BRAND, "productreviews");
+    assert.equal(parsed.FRONTEND_ORIGIN, "http://localhost:3000");
+    assert.equal(parsed.FRONTEND_ORIGINS, "");
     assert.equal(parsed.AI_MAX_CONCURRENT_REQUESTS, 4);
     assert.equal(parsed.SEARCH_MAX_CONCURRENT_REQUESTS, 4);
+    assert.equal(parsed.CONVERSATION_RETENTION_DAYS, "");
+    assert.equal(parsed.CONVERSATION_RETENTION_APPROVED, false);
   });
 
   it("accepts RATE_LIMIT_ENABLED=false", () => {
     const parsed = loadEnv({ RATE_LIMIT_ENABLED: "false" } as NodeJS.ProcessEnv);
     assert.equal(parsed.RATE_LIMIT_ENABLED, false);
+  });
+
+  it("rejects an unregistered DEFAULT_DEV_BRAND", () => {
+    assert.throws(() =>
+      loadEnv({ DEFAULT_DEV_BRAND: "not-a-brand" } as NodeJS.ProcessEnv),
+    );
+  });
+
+  it("accepts FRONTEND_ORIGINS as a comma-separated allow-list", () => {
+    const parsed = loadEnv({
+      FRONTEND_ORIGINS:
+        "https://productreviews.com.au,https://www.productreviews.com.au",
+    } as NodeJS.ProcessEnv);
+    assert.match(parsed.FRONTEND_ORIGINS, /productreviews.com.au/);
   });
 
   it("rejects invalid concurrency bounds", () => {
@@ -56,5 +76,16 @@ describe("rate limit and concurrency environment", () => {
     assert.throws(() =>
       loadEnv({ SEARCH_MAX_CONCURRENT_REQUESTS: "99" } as NodeJS.ProcessEnv),
     );
+  });
+
+  it("rejects CONVERSATION_RETENTION_APPROVED without a period", () => {
+    assert.throws(() =>
+      loadEnv({ CONVERSATION_RETENTION_APPROVED: "true" } as NodeJS.ProcessEnv),
+    );
+  });
+
+  it("does not invent a retention period by default", () => {
+    const parsed = loadEnv({} as NodeJS.ProcessEnv);
+    assert.equal(parsed.CONVERSATION_RETENTION_DAYS, "");
   });
 });

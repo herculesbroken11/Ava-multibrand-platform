@@ -13,9 +13,11 @@ function hasSourcesBlock(message: ConversationMessage): boolean {
 export function AvaMessage({
   brand,
   message,
+  turnNumber,
 }: {
   brand: BrandConfig;
   message: ConversationMessage;
+  turnNumber?: number;
 }) {
   const paragraphs = message.content
     .split(/\n{2,}/)
@@ -37,10 +39,19 @@ export function AvaMessage({
             ))}
           </div>
           {message.structuredContent?.length ? (
-            <StructuredResponse blocks={message.structuredContent} />
+            <StructuredResponse
+              blocks={message.structuredContent}
+              brandId={brand.id}
+              turnNumber={turnNumber}
+              responseKey={message.id}
+            />
           ) : null}
           {message.sources?.length && !hasSourcesBlock(message) ? (
-            <SourceReferences sources={message.sources} />
+            <SourceReferences
+              sources={message.sources}
+              brandId={brand.id}
+              turnNumber={turnNumber}
+            />
           ) : null}
         </div>
       </div>

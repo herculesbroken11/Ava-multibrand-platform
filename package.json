@@ -13,8 +13,10 @@
     "dev:backend": "npm run dev -w backend",
     "build": "npm run build -w backend && npm run build -w frontend",
     "lint": "npm run lint -w frontend && npm run lint -w backend",
-    "typecheck": "npm run typecheck -w shared && npm run typecheck -w backend",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w backend && npm run typecheck -w frontend",
     "test": "npm run test -w backend",
+    "validate:brands": "npm run validate:brands -w backend",
+    "validate:production": "npm run validate:production -w backend",
     "db:migrate": "npm run db:migrate -w backend",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose stop postgres"

@@ -1,7 +1,26 @@
-import type { ComparisonTableData } from "@/conversation/types";
+"use client";
 
-export function ComparisonTable({ table }: { table: ComparisonTableData }) {
+import { useEffect } from "react";
+import type { ComparisonTableData } from "@/conversation/types";
+import { trackComparisonView } from "@/lib/analytics/events";
+
+export function ComparisonTable({
+  table,
+  brandId,
+  turnNumber,
+  responseKey,
+}: {
+  table: ComparisonTableData;
+  brandId?: string;
+  turnNumber?: number;
+  responseKey?: string;
+}) {
   const productKey = table.columns[0]?.key ?? "product";
+
+  useEffect(() => {
+    if (!brandId || !responseKey) return;
+    trackComparisonView({ brandId, turnNumber, responseKey });
+  }, [brandId, turnNumber, responseKey]);
 
   return (
     <section className="mt-4 min-w-0">

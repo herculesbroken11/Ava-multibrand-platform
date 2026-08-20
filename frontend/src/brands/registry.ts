@@ -1,6 +1,12 @@
-import { productReviewsBrand } from "@/brands/productreviews";
-import type { BrandConfig } from "@/brands/types";
+import { productReviewsBrand } from "./productreviews";
+import { testBrand } from "./testbrand";
+import type { BrandConfig } from "./types";
 
-export const brandRegistry: Record<string, BrandConfig> = {
-  [productReviewsBrand.id]: productReviewsBrand,
-};
+export const registeredFrontendBrands: BrandConfig[] = [
+  productReviewsBrand,
+  testBrand,
+];
+
+export const brandRegistry: Record<string, BrandConfig> = Object.fromEntries(
+  registeredFrontendBrands.map((brand) => [brand.id, brand]),
+);

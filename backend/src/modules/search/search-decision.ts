@@ -41,12 +41,6 @@ const LOCATION_OVERRIDES: Array<{
   },
 ];
 
-const AUSTRALIA: SearchUserLocation = {
-  country: "AU",
-  timezone: "Australia/Sydney",
-  region: "Australia",
-};
-
 function userTexts(messages: ConversationMessage[]): string {
   return messages
     .filter((message) => message.role === "user")
@@ -88,11 +82,10 @@ function resolveLocation(
     }
   }
 
-  if (brand.market === "AU") {
-    return { location: AUSTRALIA, label: "Australia" };
-  }
-
-  return { location: AUSTRALIA, label: "Australia" };
+  return {
+    location: brand.searchLocation,
+    label: brand.searchLocation.region ?? brand.countryName,
+  };
 }
 
 function classifyIntent(latest: string, allUserText: string): SearchIntent {

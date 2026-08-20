@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { ConversationView } from "@/components/conversation/ConversationView";
 import { parseInitialQuestion } from "@/lib/ask-ava";
-import { getActiveBrand } from "@/lib/brand";
+import { getRequestBrand, resolveRequestBrand } from "@/lib/request-brand";
 
-export function generateMetadata(): Metadata {
-  const brand = getActiveBrand();
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await resolveRequestBrand();
+  if (!brand) {
+    return { title: "Unknown host", robots: { index: false, follow: false } };
+  }
 
   return {
     title: `Ask ${brand.ava.name} — ${brand.name}`,
@@ -17,7 +20,7 @@ export default async function AskAvaPage({
 }: {
   searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const brand = getActiveBrand();
+  const brand = await getRequestBrand();
   const params = await searchParams;
   const initialQuestion = parseInitialQuestion(params.q);
 

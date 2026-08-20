@@ -4,6 +4,7 @@ import { env } from "./config/env";
 import { registerErrorHandler } from "./common/errors/error-handler";
 import { registerRateLimit } from "./common/middleware/rate-limit";
 import { closePool } from "./modules/database/database";
+import { isAllowedFrontendOrigin } from "./modules/brands/origins";
 import { registerConversationRoutes } from "./modules/conversation/routes";
 import { registerHealthRoutes } from "./modules/health/routes";
 
@@ -33,7 +34,13 @@ export async function buildApp() {
   });
 
   await app.register(cors, {
-    origin: env.FRONTEND_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, false);
+        return;
+      }
+      callback(null, isAllowedFrontendOrigin(origin));
+    },
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Accept"],
     maxAge: 600,

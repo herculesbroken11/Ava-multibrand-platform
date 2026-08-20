@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
@@ -53,7 +53,7 @@ describe("postgres conversation repository", { timeout: 180_000 }, () => {
       user: USER,
       password: PASSWORD,
       port: PORT,
-      persistent: false,
+      persistent: true,
       onLog: () => undefined,
     });
     await embedded.initialise();
@@ -74,20 +74,16 @@ describe("postgres conversation repository", { timeout: 180_000 }, () => {
   }
 
   after(async () => {
-    await pool?.end();
-    await embedded?.stop();
-    if (!dataDir) return;
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      try {
-        await rm(dataDir, { recursive: true, force: true });
-        return;
-      } catch (error) {
-        const code = (error as NodeJS.ErrnoException).code;
-        if (code !== "EBUSY" && code !== "EPERM") throw error;
-        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
-      }
+    try {
+      await pool?.end();
+    } catch {
+      // ignore pool shutdown races
     }
-    // Windows can keep a lock on the embedded data dir after stop(); leftover temp is harmless.
+    try {
+      await embedded?.stop();
+    } catch {
+      // Windows can lock files while the process is exiting.
+    }
   });
 
   it("P: migration creates the required schema", async () => {
@@ -150,6 +146,15 @@ describe("postgres conversation repository", { timeout: 180_000 }, () => {
     assert.equal(recorded.session.domain, "productreviews.com.au");
   });
 
+  it("O: ProductReviews canonical database domain remains productreviews.com.au", async () => {
+    const recorded = await repo.recordSuccessfulTurn(
+      successLog({ clientSessionId: "convo_o_canonical_domain" }),
+    );
+    assert.equal(recorded.session.brandId, "productreviews");
+    assert.equal(recorded.session.domain, "productreviews.com.au");
+    assert.notEqual(recorded.session.domain, "www.productreviews.com.au");
+  });
+
   it("B/C: later turns reuse the session and increment follow_up_count", async () => {
     await repo.recordSuccessfulTurn(successLog({ clientSessionId: "convo_bc", userMessage: "First" }));
     const second = await repo.recordSuccessfulTurn(
@@ -167,13 +172,14 @@ describe("postgres conversation repository", { timeout: 180_000 }, () => {
   });
 
   it("E: different brand IDs do not collide", async () => {
-    const other = { ...brand, id: "otherbrand", domain: "other.example" };
+    const other = getBackendBrand("testbrand");
+    assert.ok(other);
     const first = await repo.recordSuccessfulTurn(successLog({ clientSessionId: "shared" }));
     const second = await repo.recordSuccessfulTurn(
       successLog({ clientSessionId: "shared", brand: other }),
     );
     assert.notEqual(first.session.id, second.session.id);
-    assert.equal(second.session.domain, "other.example");
+    assert.equal(second.session.domain, "testbrand.local");
   });
 
   it("F: stores provider, model, and duration", async () => {

@@ -51,8 +51,11 @@ If both GTM and a GA4 ID are present, **GTM wins** so the same hits are not doub
 | `ask_ava_start` | Landing composer submit or suggested-question click | `brand_id`, `entry` (`composer` \| `suggested_question`) |
 | `ava_turn` | Conversation request finished | `brand_id`, `result` (`success` \| `error` \| `rate_limited` \| `capacity_limited`), `is_follow_up`, `has_sources` |
 | `ava_retry` | User taps Try again | `brand_id` |
+| `source_open` | User opens a validated source link | `brand_id`, `turn_number` (Ava reply index in the current session) |
+| `comparison_view` | A comparison table is presented (once per Ava response, including React rerenders) | `brand_id`, `turn_number` |
+| `help_ava_smarter_click` | User clicks the existing “Help make Ava smarter” CTA | `brand_id` |
 
-`page_location` is attached only in sanitized form (no search string).
+`source_open` does not receive URL, href, or source title. `comparison_view` is deduped in the tracker by Ava message id; that id is never sent to GA4. `help_ava_smarter_click` does not receive the CTA href.
 
 ---
 
@@ -60,7 +63,7 @@ If both GTM and a GA4 ID are present, **GTM wins** so the same hits are not doub
 
 Allowed primitives after sanitization: string, number, boolean.
 
-Intended keys: `brand_id`, `entry`, `result`, `is_follow_up`, `has_sources`, `page_location`.
+Intended keys: `brand_id`, `entry`, `result`, `is_follow_up`, `has_sources`, `turn_number`, `page_location`.
 
 ---
 
@@ -68,7 +71,7 @@ Intended keys: `brand_id`, `entry`, `result`, `is_follow_up`, `has_sources`, `pa
 
 `sanitizeAnalyticsParams` drops:
 
-`question`, `answer`, `content`, `message`, `text`, `prompt`, `query`, `q`, `url`, `href`, `sources`, `user_message`, `ava_response`, `session_id`, `sessionId`, `client_session_id`, `email`, `name`, `phone`, `ip`.
+`question`, `answer`, `content`, `message`, `text`, `prompt`, `query`, `q`, `url`, `href`, `sources`, `title`, `user_message`, `ava_response`, `session_id`, `sessionId`, `client_session_id`, `email`, `name`, `phone`, `ip`.
 
 Call sites never pass question/answer/session id. PostgreSQL remains the store for anonymous conversational content.
 
@@ -260,6 +263,10 @@ See “Build / lint / typecheck / tests” below. Coverage added this step:
 | Case | Result |
 | --- | --- |
 | Analytics sanitizer drops question/answer/session/url | pass |
+| `source_open` / `comparison_view` / `help_ava_smarter_click` fire with allowed params only | pass |
+| `comparison_view` is not repeated for the same response | pass |
+| Source URL, title, conversation text, and session IDs stay excluded | pass |
+| Analytics-disabled mode emits nothing | pass |
 | GA4 / GTM ID format checks | pass |
 | Rate limit: 3rd conversation POST in a max=2 window → 429 `RATE_LIMITED` | pass |
 | Health is not rate-limited | pass |
@@ -295,8 +302,10 @@ Viewports unchanged: **1440×900**, **768×1024**, **390×844**.
 - `backend/src/common/concurrency.test.ts`
 - `backend/src/common/middleware/rate-limit.test.ts`
 - `backend/src/common/analytics-sanitize.test.ts`
+- `backend/src/common/analytics-events.test.ts`
 - `frontend/src/lib/analytics/config.ts`
 - `frontend/src/lib/analytics/events.ts`
+- `frontend/src/lib/analytics/runtime.ts`
 - `frontend/src/components/AnalyticsScripts.tsx`
 - `docs/PHASE-1-STEP-8.md`
 
@@ -321,8 +330,14 @@ Viewports unchanged: **1440×900**, **768×1024**, **390×844**.
 - `frontend/src/conversation/types.ts`, `use-conversation-session.ts`
 - `frontend/src/components/AskAvaPanel.tsx`
 - `frontend/src/components/SuggestedQuestionBubble.tsx`
+- `frontend/src/components/AvaLearningSection.tsx`
 - `frontend/src/components/conversation/ConversationView.tsx`
 - `frontend/src/components/conversation/ConversationError.tsx`
+- `frontend/src/components/conversation/AvaMessage.tsx`
+- `frontend/src/components/conversation/MessageList.tsx`
+- `frontend/src/components/conversation/StructuredResponse.tsx`
+- `frontend/src/components/conversation/SourceReferences.tsx`
+- `frontend/src/components/conversation/ComparisonTable.tsx`
 
 ---
 
@@ -356,7 +371,7 @@ Viewports unchanged: **1440×900**, **768×1024**, **390×844**.
 | `npm run build` | pass (backend `tsc --noEmit`, frontend Next.js 16.3.1 production build) |
 | `npm run lint` | pass |
 | `npm run typecheck` | pass (shared + backend; frontend `tsc --noEmit` also pass) |
-| `npm run test` | **102 passed**, including live PostgreSQL migration 002 + repository tests |
+| `npm run test` | **109 passed**, including live PostgreSQL migration 002 + repository tests |
 
 ---
 

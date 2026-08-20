@@ -19,13 +19,13 @@ function clip(text: string, max: number): string {
   return cleaned.slice(0, max - 1).trimEnd();
 }
 
-function extractBudget(text: string): string | undefined {
-  const aud = text.match(/\bAUD\s*\$?\s*(\d[\d,]*)\b/i);
-  if (aud?.[1]) return `AUD ${aud[1].replace(/,/g, "")}`;
+function extractBudget(text: string, currency: string): string | undefined {
+  const labelled = text.match(new RegExp(`\\b${currency}\\s*\\$?\\s*(\\d[\\d,]*)\\b`, "i"));
+  if (labelled?.[1]) return `${currency} ${labelled[1].replace(/,/g, "")}`;
   const dollars = text.match(/\$\s*(\d[\d,]*)/);
-  if (dollars?.[1]) return `AUD ${dollars[1].replace(/,/g, "")}`;
+  if (dollars?.[1]) return `${currency} ${dollars[1].replace(/,/g, "")}`;
   const under = text.match(/\bunder\s+\$?\s*(\d[\d,]*)\b/i);
-  if (under?.[1]) return `under AUD ${under[1].replace(/,/g, "")}`;
+  if (under?.[1]) return `under ${currency} ${under[1].replace(/,/g, "")}`;
   return undefined;
 }
 
@@ -92,7 +92,7 @@ export function buildSearchQuery(args: {
   const topic = extractTopic(`${latest} ${allUserText}`);
   if (topic) parts.push(topic);
 
-  const budget = extractBudget(allUserText);
+  const budget = extractBudget(allUserText, args.brand.currency);
   if (budget) parts.push(budget);
 
   const pets = extractPets(allUserText);

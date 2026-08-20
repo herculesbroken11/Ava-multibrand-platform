@@ -1,3 +1,4 @@
-export type * from "@/brands/types";
-export { productReviewsBrand } from "@/brands/productreviews";
-export { brandRegistry } from "@/brands/registry";
+export type * from "./types";
+export { productReviewsBrand } from "./productreviews";
+export { testBrand } from "./testbrand";
+export { brandRegistry, registeredFrontendBrands } from "./registry";

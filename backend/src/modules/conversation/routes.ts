@@ -22,7 +22,11 @@ export async function registerConversationRoutes(app: FastifyInstance): Promise<
         );
       }
 
-      return sendConversationMessage(parsed.data);
+      const origin = Array.isArray(request.headers.origin)
+        ? request.headers.origin[0]
+        : request.headers.origin;
+
+      return sendConversationMessage(parsed.data, { origin });
     },
   );
 }

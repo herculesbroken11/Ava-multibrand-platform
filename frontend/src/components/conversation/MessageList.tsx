@@ -16,6 +16,12 @@ export function MessageList({
   isLoading: boolean;
   className?: string;
 }) {
+  const avaTurnById = new Map(
+    messages
+      .filter((message) => message.role === "ava")
+      .map((message, index) => [message.id, index + 1] as const),
+  );
+
   return (
     <div
       className={cn("min-w-0 space-y-4 md:space-y-5", className)}
@@ -25,7 +31,12 @@ export function MessageList({
         message.role === "user" ? (
           <UserMessage key={message.id} message={message} />
         ) : (
-          <AvaMessage key={message.id} brand={brand} message={message} />
+          <AvaMessage
+            key={message.id}
+            brand={brand}
+            message={message}
+            turnNumber={avaTurnById.get(message.id)}
+          />
         ),
       )}
       {isLoading ? <TypingIndicator brand={brand} /> : null}

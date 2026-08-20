@@ -1,8 +1,8 @@
 import { ConversationHeader } from "@/components/conversation/ConversationHeader";
-import { getActiveBrand } from "@/lib/brand";
+import { getRequestBrand } from "@/lib/request-brand";
 
-export default function AskAvaLoading() {
-  const brand = getActiveBrand();
+export default async function AskAvaLoading() {
+  const brand = await getRequestBrand();
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">

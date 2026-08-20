@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "db:migrate": "tsx src/modules/database/migrate.ts",
-    "test": "tsx --test src/modules/ava/ava.test.ts src/modules/ai/map-provider-error.test.ts src/modules/search/search.test.ts src/config/env.test.ts src/modules/logging/logging-service.test.ts src/modules/logging/conversation-logging.test.ts src/modules/logging/postgres-conversation-repository.test.ts src/common/concurrency.test.ts src/common/middleware/rate-limit.test.ts src/common/analytics-sanitize.test.ts"
+    "test": "tsx --test src/modules/ava/ava.test.ts src/modules/ai/map-provider-error.test.ts src/modules/search/search.test.ts src/config/env.test.ts src/modules/logging/logging-service.test.ts src/modules/logging/conversation-logging.test.ts src/modules/logging/postgres-conversation-repository.test.ts src/common/concurrency.test.ts src/common/middleware/rate-limit.test.ts src/common/analytics-sanitize.test.ts src/common/analytics-events.test.ts src/modules/brands/host-resolution.test.ts src/modules/brands/origin-consistency.test.ts src/modules/readiness/production-readiness.test.ts",
+    "validate:brands": "tsx src/modules/brands/validate-cli.ts",
+    "validate:production": "tsx src/modules/readiness/validate-production-cli.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",

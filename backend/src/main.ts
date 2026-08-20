@@ -1,5 +1,6 @@
 import { env } from "./config/env";
 import { buildApp } from "./app";
+import { frontendOriginAllowList } from "./modules/brands/origins";
 
 async function start() {
   const app = await buildApp();
@@ -10,7 +11,8 @@ async function start() {
       {
         port: env.PORT,
         host: env.HOST,
-        frontendOrigin: env.FRONTEND_ORIGIN,
+        frontendOrigins: frontendOriginAllowList(),
+        trustForwardedHost: env.TRUST_FORWARDED_HOST,
       },
       "API listening",
     );

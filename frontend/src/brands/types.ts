@@ -1,3 +1,5 @@
+import type { BrandId, BrandKind } from "@product-reviews/contracts";
+
 export type LogoColorToken = "heading" | "primary" | "muted" | "onPrimary";
 
 export type TrustIconId =
@@ -140,6 +142,8 @@ export interface LearningContent {
   body: string;
   cta: string;
   ctaHref: string;
+  /** `pending` means the CTA exists but the client has not confirmed the final destination. */
+  ctaDestinationStatus: "final" | "pending";
 }
 
 export interface FooterContent {
@@ -186,10 +190,49 @@ export interface ConversationContent {
   rateLimitMessage: string;
 }
 
+export type ContentStatus = "final" | "placeholder";
+
+export type InformationBlock =
+  | { type: "heading"; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "bullets"; items: string[] };
+
+export interface InformationPage {
+  title: string;
+  intro?: string;
+  lastUpdated?: string;
+  status: ContentStatus;
+  blocks: InformationBlock[];
+}
+
+export interface ContactPage {
+  title: string;
+  heading: string;
+  intro?: string;
+  email?: string;
+  businessName?: string;
+  instructions?: string;
+  lastUpdated?: string;
+  status: ContentStatus;
+}
+
+export interface BrandPages {
+  privacy: InformationPage;
+  terms: InformationPage;
+  disclaimer: InformationPage;
+  contact: ContactPage;
+  about?: InformationPage;
+}
+
 export interface BrandConfig {
-  id: string;
+  id: BrandId;
+  kind: BrandKind;
   domain: string;
   name: string;
+  locale?: string;
+  favicon?: string;
+  categoryContext?: string;
+  featureFlags?: Record<string, boolean>;
   colors: BrandColors;
   typography: BrandTypography;
   logo: BrandLogo;
@@ -207,4 +250,5 @@ export interface BrandConfig {
   analytics: BrandAnalytics;
   ava: AvaConfig;
   conversation: ConversationContent;
+  pages: BrandPages;
 }

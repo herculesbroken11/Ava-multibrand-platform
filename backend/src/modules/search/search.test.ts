@@ -179,6 +179,14 @@ describe("search decision", () => {
     assert.equal(decision.location.country, "AU");
     assert.equal(decision.locationLabel, "Australia");
   });
+
+  it("defaults the test fixture brand search location from server brand config", () => {
+    const fixture = getBackendBrand("testbrand");
+    assert.ok(fixture);
+    const decision = decideSearch([user("How much is the Dyson today?")], fixture);
+    assert.equal(decision.location.country, "NZ");
+    assert.equal(decision.locationLabel, "New Zealand");
+  });
 });
 
 describe("search query builder", () => {
